@@ -9,6 +9,7 @@ import time
 
 st.set_page_config(page_title="EmoMind - FSM Emotion Engine", layout="centered")
 
+
 st.title("EmoMind — FSM-Based Emotion Engine")
 st.write("Speak into your microphone and watch the bot's mood update via an FSM. Uses transformer-based emotion+sentiment (with fallback).")
 
@@ -63,6 +64,30 @@ def handle_audio_cycle():
     # NLP inference
     with st.spinner("Running emotion & sentiment analysis..."):
         emo_pred, sent_pred = pipe.predict(transcription)
+    # Show emotion scores as colored cards
+    st.subheader("🎭 Emotion Dashboard")
+    cols = st.columns(len(emo_pred) or 1)
+
+    color_map = {
+        "Happy": "#FFD700",
+        "Sad": "#87CEEB",
+        "Angry": "#FF6B6B",
+        "Surprised": "#FFA500",
+        "Fearful": "#9370DB",
+        "Curious": "#00FA9A",
+        "Neutral": "#C0C0C0"
+    }
+
+    for i, (emo, score) in enumerate(sorted(emo_pred.items(), key=lambda x: x[1], reverse=True)):
+        with cols[i % len(cols)]:
+            st.markdown(f"""
+            <div style='background-color:{color_map.get(emo.capitalize(), "#050505")};
+                        padding:15px; border-radius:10px; text-align:center;'>
+                <b>{emo}</b><br>
+                <span style='font-size:20px;'>{score:.2f}</span>
+            </div>
+            """, unsafe_allow_html=True)
+
     st.write("**Emotion predictions:**", format_prediction(emo_pred))
     st.write("**Sentiment:**", format_prediction(sent_pred))
 
